@@ -175,7 +175,7 @@ function login() {
     .then(res => res.json())
     .then((body) => {
       token = body.token;
-      fetchAndLogContent();
+      // fetchAndLogContent();
     });
 }
 login();
