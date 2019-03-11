@@ -29,6 +29,7 @@ const websiteId = "15d09dc1-c83d-4d55-ae61-0d555aaff267";
 const imageComponentId = "448898fc-e676-4593-a6de-72501b1a07bf";
 const titleContentId = "f119a592-182d-4637-90ad-6a94de0ea1bf";
 const textBodyContentId = "b555d9e8-a3ec-4672-b559-293357171a58";
+const phoneNumberContentId = 'ac1d5d2c-66a7-4fc8-b4d4-257df206a30d';
 
 function handleImage(image, callback, textResponseNumbers = {}) {
   return request(image)
@@ -125,6 +126,14 @@ function pollPublish(textResponseNumbers) {
   });
 }
 
+function formatNumber(phoneNumber) {
+  // converts +19258995970 to (925) 899-5970
+  const part0 = phoneNumber.slice(2, 5);
+  const part1 = phoneNumber.slice(5, 8);
+  const part2 = phoneNumber.slice(8);
+  return `(${part0}) ${part1}-${part2}`;
+}
+
 app.post("/sms", (req, res) => {
   const userNumber = req.body.From;
   const twilioNumber = req.body.To;
@@ -133,6 +142,13 @@ app.post("/sms", (req, res) => {
     to: userNumber,
   };
   const twiml = new MessagingResponse();
+
+  client.messages
+    .create({
+      body: `${userNumber} is updating the site`,
+      from: twilioNumber,
+      to: '+19258995970',
+    });
 
   const text = req.body.Body;
   const parts = text.split("\n").filter(x => x);
@@ -143,6 +159,7 @@ app.post("/sms", (req, res) => {
   function handleTextAndPublish() {
     return handleText(title, titleContentId, textResponseNumbers, 'title')
       .then(() => handleText(textBody, textBodyContentId, textResponseNumbers, 'body'))
+      .then(() => handleText(`Last udpated by: ${formatNumber(userNumber)}`, phoneNumberContentId, textResponseNumbers, '‘edited by‘'))
       .then(() => pollPublish(textResponseNumbers))
       .then((res) => {
         const { url } = res;
