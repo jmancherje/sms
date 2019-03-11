@@ -1,5 +1,4 @@
 const http = require("http");
-const https = require("https");
 const express = require("express");
 const fetch = require("node-fetch");
 const request = require("request");
@@ -29,16 +28,18 @@ const imageComponentId = "448898fc-e676-4593-a6de-72501b1a07bf";
 const titleContentId = "f119a592-182d-4637-90ad-6a94de0ea1bf";
 const textBodyContentId = "b555d9e8-a3ec-4672-b559-293357171a58";
 
-function handleImage(image, callback) {
-  console.log('has image')
+function handleImage(image, callback, textResponseNumbers = {}) {
   return request(image)
     .pipe(fs.createWriteStream("local.jpeg"))
     .on("close", () => {
-      console.log('requesting image')
       const form = new FormData();
       const path = `${__dirname}/local.jpeg`;
-      console.log('image path', path);
       form.append("file", fs.createReadStream(path), "image.jpeg");
+      client.messages
+        .create({
+          body: 'Starting Image Upload...',
+          ...textResponseNumbers,
+        });
       return axios({
         method: "post",
         url: `https://app.brandcast.io/api/_/images/${websiteId}/upload/`,
@@ -49,20 +50,21 @@ function handleImage(image, callback) {
         }
       })
         .then((res) => {
-          console.log("success", res.data.image_id);
-          return fetch(
-            `https://app.brandcast.io/api/_/content/${imageComponentId}`,
-            {
-              method: "PUT",
-              body: JSON.stringify({
-                type: "image",
-                content: {
-                  image_id: res.data.image_id
-                }
-              }),
-              headers: { ...headers, token }
-            }
-          );
+          client.messages
+            .create({
+              body: 'Image upload complete',
+              ...textResponseNumbers,
+            });
+          return fetch(`https://app.brandcast.io/api/_/content/${imageComponentId}`, {
+            method: "PUT",
+            body: JSON.stringify({
+              type: "image",
+              content: {
+                image_id: res.data.image_id
+              }
+            }),
+            headers: { ...headers, token }
+          });
         })
         .then(res => res.json())
         .then(callback)
@@ -70,7 +72,7 @@ function handleImage(image, callback) {
     });
 }
 
-function handleText(text, textContentId) {
+function handleText(text, textContentId, textResponseNumbers, type) {
   if (!text) return Promise.resolve();
 
   return fetch(`https://app.brandcast.io/api/_/content/${textContentId}`, {
@@ -87,10 +89,17 @@ function handleText(text, textContentId) {
       }
     }),
     headers: { ...headers, token }
-  }).then(res => res.json());
+  }).then((res) => {
+    client.messages
+      .create({
+        body: `Updated ${type}`,
+        ...textResponseNumbers,
+      });
+    return res.json()
+  });
 }
 
-function pollPublish() {
+function pollPublish(textResponseNumbers) {
   return new Promise((resolve, reject) => {
     function attemptPublish() {
       return fetch(
@@ -106,6 +115,11 @@ function pollPublish() {
             console.log("successful publish.");
             return resolve(res);
           }
+          client.messages
+            .create({
+              body: 'Image still uploading, attemping to publish again in 10 seconds',
+              ...textResponseNumbers,
+            });
           setTimeout(attemptPublish, 10000);
         })
         .catch(err => reject(err));
@@ -115,10 +129,12 @@ function pollPublish() {
 }
 
 app.post("/sms", (req, res) => {
-  console.log('received sms', req)
   const userNumber = req.body.From;
   const twilioNumber = req.body.To;
-  console.log('received a text from ', userNumber);
+  const textResponseNumbers = {
+    from: twilioNumber,
+    to: userNumber,
+  };
   const twiml = new MessagingResponse();
 
   const text = req.body.Body;
@@ -128,16 +144,15 @@ app.post("/sms", (req, res) => {
   const image = req.body.MediaUrl0;
 
   function handleTextAndPublish() {
-    return handleText(title, titleContentId)
-      .then(() => handleText(textBody, textBodyContentId))
-      .then(pollPublish)
+    return handleText(title, titleContentId, textResponseNumbers, 'title')
+      .then(() => handleText(textBody, textBodyContentId, textResponseNumbers, 'body'))
+      .then(() => pollPublish(textResponseNumbers))
       .then((res) => {
         const { url } = res;
         return client.messages
           .create({
+            ...textResponseNumbers,
             body: `Website successfully updated. View it at: ${url}`,
-            from: twilioNumber,
-            to: userNumber
           });
       })
       .catch(err => console.error(err));
@@ -146,7 +161,7 @@ app.post("/sms", (req, res) => {
   if (!image) {
     handleTextAndPublish();
   } else {
-    handleImage(image, handleTextAndPublish);
+    handleImage(image, handleTextAndPublish, textResponseNumbers);
   }
   res.writeHead(200, { "Content-Type": "text/xml" });
   res.end(twiml.toString());
@@ -188,6 +203,6 @@ function login() {
 }
 login();
 
-http.createServer(app).listen(1337, () => {
+http.createServer(app).listen(process.env.PORT || 1337, () => {
   console.log("Express server listening on port 1337");
 });
