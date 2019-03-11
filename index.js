@@ -166,10 +166,13 @@ function fetchAndLogContent() {
 }
 
 function login() {
+  console.log('attempting to login to brandcast')
   const inputBody = {
     username: process.env.BRANDCAST_USERNAME,
     password: process.env.BRANDCAST_PASSWORD
   };
+
+  console.log('creds', inputBody)
 
   fetch("https://app.brandcast.io/api/_/auth/", {
     method: "POST",
@@ -178,6 +181,7 @@ function login() {
   })
     .then(res => res.json())
     .then((body) => {
+      console.log('successful brandcast login')
       token = body.token;
       // fetchAndLogContent();
     });
