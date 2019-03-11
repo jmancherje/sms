@@ -22,6 +22,8 @@ const headers = {
   Accept: "application/json"
 };
 var token;
+
+const PORT = process.env.PORT || 1337;
 const websiteId = "15d09dc1-c83d-4d55-ae61-0d555aaff267";
 // var pageId = "4cf26e13-e8a6-4a21-9148-0ef7354344d4";
 const imageComponentId = "448898fc-e676-4593-a6de-72501b1a07bf";
@@ -181,13 +183,10 @@ function fetchAndLogContent() {
 }
 
 function login() {
-  console.log('attempting to login to brandcast')
   const inputBody = {
     username: process.env.BRANDCAST_USERNAME,
     password: process.env.BRANDCAST_PASSWORD
   };
-
-  console.log('creds', inputBody)
 
   fetch("https://app.brandcast.io/api/_/auth/", {
     method: "POST",
@@ -196,13 +195,13 @@ function login() {
   })
     .then(res => res.json())
     .then((body) => {
-      console.log('successful brandcast login')
+      console.log('successful brandcast login');
       token = body.token;
       // fetchAndLogContent();
     });
 }
 login();
 
-http.createServer(app).listen(process.env.PORT || 1337, () => {
-  console.log("Express server listening on port 1337");
+http.createServer(app).listen(PORT, () => {
+  console.log(`Express server listening on port ${PORT}`);
 });
