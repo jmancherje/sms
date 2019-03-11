@@ -30,12 +30,14 @@ const titleContentId = "f119a592-182d-4637-90ad-6a94de0ea1bf";
 const textBodyContentId = "b555d9e8-a3ec-4672-b559-293357171a58";
 
 function handleImage(image, callback) {
-  if (!image) return Promise.resolve();
+  console.log('has image')
   return request(image)
     .pipe(fs.createWriteStream("local.jpeg"))
     .on("close", () => {
+      console.log('requesting image')
       const form = new FormData();
       const path = `${__dirname}/local.jpeg`;
+      console.log('image path', path);
       form.append("file", fs.createReadStream(path), "image.jpeg");
       return axios({
         method: "post",
@@ -115,6 +117,7 @@ function pollPublish() {
 app.post("/sms", (req, res) => {
   const userNumber = req.body.From;
   const twilioNumber = req.body.To;
+  console.log('received a text from ', userNumber);
   const twiml = new MessagingResponse();
 
   const text = req.body.Body;
