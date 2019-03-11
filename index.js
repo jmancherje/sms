@@ -115,6 +115,7 @@ function pollPublish() {
 }
 
 app.post("/sms", (req, res) => {
+  console.log('received sms', req)
   const userNumber = req.body.From;
   const twilioNumber = req.body.To;
   console.log('received a text from ', userNumber);
