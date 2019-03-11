@@ -71,7 +71,7 @@ function handleImage(image, callback, textResponseNumbers = {}) {
 }
 
 function handleText(text, textContentId, textResponseNumbers, type) {
-  if (!text) return Promise.resolve();
+  // if (!text) return Promise.resolve();
 
   return fetch(`https://app.brandcast.io/api/_/content/${textContentId}`, {
     method: "PUT",
@@ -80,7 +80,7 @@ function handleText(text, textContentId, textResponseNumbers, type) {
       content: {
         blocks: [
           {
-            text,
+            text: text || ' ',
             element_type: "paragraph"
           }
         ]
