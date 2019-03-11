@@ -52,11 +52,6 @@ function handleImage(image, callback, textResponseNumbers = {}) {
         }
       })
         .then((res) => {
-          client.messages
-            .create({
-              body: 'Image upload complete',
-              ...textResponseNumbers,
-            });
           return fetch(`https://app.brandcast.io/api/_/content/${imageComponentId}`, {
             method: "PUT",
             body: JSON.stringify({
@@ -119,10 +114,10 @@ function pollPublish(textResponseNumbers) {
           }
           client.messages
             .create({
-              body: 'Image still uploading, attemping to publish again in 10 seconds',
+              body: 'Image still uploading, attemping to publish again in 5 seconds',
               ...textResponseNumbers,
             });
-          setTimeout(attemptPublish, 10000);
+          setTimeout(attemptPublish, 5000);
         })
         .catch(err => reject(err));
     }
