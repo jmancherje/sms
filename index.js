@@ -93,7 +93,7 @@ function handleText(text, textContentId, textResponseNumbers, type) {
         body: `Updated ${type}`,
         ...textResponseNumbers,
       });
-    return res.json()
+    return res.json();
   });
 }
 
@@ -209,7 +209,7 @@ function login() {
     .then((body) => {
       console.log('successful brandcast login');
       token = body.token;
-      // fetchAndLogContent();
+      fetchAndLogContent();
     });
 }
 login();
