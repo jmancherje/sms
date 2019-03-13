@@ -17,6 +17,11 @@ const MessagingResponse = require("twilio").twiml.MessagingResponse;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
+const peopleToNotify = [
+  '+19258995970', // Justin
+  '+13306877578', // Alex
+];
+
 const headers = {
   "Content-Type": "application/json",
   Accept: "application/json"
@@ -143,12 +148,14 @@ app.post("/sms", (req, res) => {
   };
   const twiml = new MessagingResponse();
 
-  client.messages
-    .create({
-      body: `${userNumber} is updating the site`,
-      from: twilioNumber,
-      to: '+19258995970',
-    });
+  peopleToNotify.forEach((number) => {
+    client.messages
+      .create({
+        body: `${userNumber} is updating the site`,
+        from: twilioNumber,
+        to: number,
+      });
+  });
 
   const text = req.body.Body;
   const parts = text.split("\n").filter(x => x);
