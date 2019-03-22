@@ -17,10 +17,7 @@ const MessagingResponse = require("twilio").twiml.MessagingResponse;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 
-const peopleToNotify = [
-  '+19258995970', // Justin
-  '+13306877578', // Alex
-];
+const peopleToNotify = process.env.NUMBERSTONOTIFY.split(',').filter(i => i);
 
 const headers = {
   "Content-Type": "application/json",
@@ -30,7 +27,6 @@ var token;
 
 const PORT = process.env.PORT || 1337;
 const websiteId = "15d09dc1-c83d-4d55-ae61-0d555aaff267";
-// var pageId = "4cf26e13-e8a6-4a21-9148-0ef7354344d4";
 const imageComponentId = "448898fc-e676-4593-a6de-72501b1a07bf";
 const titleContentId = "f119a592-182d-4637-90ad-6a94de0ea1bf";
 const textBodyContentId = "b555d9e8-a3ec-4672-b559-293357171a58";
@@ -75,9 +71,7 @@ function handleImage(image, callback, textResponseNumbers = {}) {
     });
 }
 
-function handleText(text, textContentId, textResponseNumbers, type) {
-  // if (!text) return Promise.resolve();
-
+function handleText(text, textContentId, type) {
   return fetch(`https://app.brandcast.io/api/_/content/${textContentId}`, {
     method: "PUT",
     body: JSON.stringify({
@@ -92,14 +86,7 @@ function handleText(text, textContentId, textResponseNumbers, type) {
       }
     }),
     headers: { ...headers, token }
-  }).then((res) => {
-    client.messages
-      .create({
-        body: `Updated ${type}`,
-        ...textResponseNumbers,
-      });
-    return res.json();
-  });
+  }).then(res => res.json());
 }
 
 function pollPublish(textResponseNumbers) {
@@ -164,9 +151,9 @@ app.post("/sms", (req, res) => {
   const image = req.body.MediaUrl0;
 
   function handleTextAndPublish() {
-    return handleText(title, titleContentId, textResponseNumbers, 'title')
-      .then(() => handleText(textBody, textBodyContentId, textResponseNumbers, 'body'))
-      .then(() => handleText(`Last udpated by: ${formatNumber(userNumber)}`, phoneNumberContentId, textResponseNumbers, '‘edited by‘'))
+    return handleText(title, titleContentId, 'title')
+      .then(() => handleText(textBody, textBodyContentId, 'body'))
+      .then(() => handleText(`Last udpated by: ${formatNumber(userNumber)}`, phoneNumberContentId, '‘edited by‘'))
       .then(() => pollPublish(textResponseNumbers))
       .then((res) => {
         const { url } = res;
