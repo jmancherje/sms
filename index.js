@@ -67,7 +67,7 @@ function handleImage(image, callback, textResponseNumbers = {}) {
         })
         .then(res => res.json())
         .then(callback)
-        .catch(err => console.error("error", err));
+        .catch(err => console.error("handle image error", err));
     });
 }
 
@@ -163,7 +163,7 @@ app.post("/sms", (req, res) => {
             body: `Website successfully updated. View it at: ${url}`,
           });
       })
-      .catch(err => console.error(err));
+      .catch(err => console.error('text and publish error', err));
   }
 
   if (!image) {
@@ -185,7 +185,7 @@ function fetchAndLogContent() {
   })
     .then(res => res.json())
     .then(content => console.log('all website content: ', content))
-    .catch(err => console.error("error", err));
+    .catch(err => console.error("fetch and log content error", err));
 }
 
 function login() {
@@ -203,7 +203,7 @@ function login() {
     .then((body) => {
       console.log('successful brandcast login');
       token = body.token;
-      fetchAndLogContent();
+      // fetchAndLogContent();
     });
 }
 login();
