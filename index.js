@@ -27,7 +27,7 @@ var token;
 
 const PORT = process.env.PORT || 1337;
 const websiteId = "15d09dc1-c83d-4d55-ae61-0d555aaff267";
-const imageComponentId = "448898fc-e676-4593-a6de-72501b1a07bf";
+const backgroundImageComponentId = "08d2756b-81b7-4560-84c3-bacf8c51c3e6";
 const titleContentId = "f119a592-182d-4637-90ad-6a94de0ea1bf";
 const textBodyContentId = "b555d9e8-a3ec-4672-b559-293357171a58";
 const phoneNumberContentId = 'ac1d5d2c-66a7-4fc8-b4d4-257df206a30d';
@@ -54,10 +54,10 @@ function handleImage(image, callback, textResponseNumbers = {}) {
         }
       })
         .then((res) => {
-          return fetch(`https://app.brandcast.io/api/_/content/${imageComponentId}`, {
+          return fetch(`https://app.brandcast.io/api/_/content/${backgroundImageComponentId}`, {
             method: "PUT",
             body: JSON.stringify({
-              type: "image",
+              type: "background_image",
               content: {
                 image_id: res.data.image_id
               }
