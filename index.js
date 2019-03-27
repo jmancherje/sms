@@ -49,7 +49,8 @@ function handleImage(image, callback, textResponseNumbers = {}) {
         url: `https://app.brandcast.io/api/_/images/${websiteId}/upload/`,
         data: form,
         headers: {
-          "Content-Type": `multipart/form-data; boundary=${form._boundary}`,
+          // "Content-Type": `multipart/form-data; boundary=${form._boundary}`,
+          "Content-Type": 'multipart/form-data',
           token
         }
       })
